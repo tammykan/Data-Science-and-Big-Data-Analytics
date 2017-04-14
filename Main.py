@@ -33,7 +33,7 @@ def extract_features(record):
 
 def prepare_data(sc):
     print("開始匯入資料...")
-    rawDataWithHeader = sc.textFile("./train_100mb.csv")
+    rawDataWithHeader = sc.textFile("./train.csv")
     header = rawDataWithHeader.first()
     rawData = rawDataWithHeader.filter(lambda x: x != header)
     lines = rawData.map(lambda x: x.split(","))
@@ -51,17 +51,20 @@ def prepare_data(sc):
 
 def CreateSparkContext():
     sparkConf = SparkConf()   \
-        .setAppName("RunDecisionTreeRegression") \
+        .setAppName("RunDecisionTreeClassficaiton") \
         .set("spark.ui.showConsoleProgress", "false")
     sc = SparkContext(conf=sparkConf)
     print ("master=" + sc.master)
     SetLogger(sc)
     return (sc)
 
-def trainEvaluateModel(trainData,impurity,maxDepth, maxBins):
+
+def trainEvaluateModel(trainData, impurity, maxDepth, maxBins):
 
     model = DecisionTree.trainClassifier(trainData, numClasses=2, categoricalFeaturesInfo={}, impurity=impurity, maxDepth=maxDepth, maxBins=maxBins)
     return model
+
+
 def evaluateModel(model, validationData):
     score = model.predict(validationData.map(lambda p: p.features))
     labelsAndPredictions = validationData.map(lambda p: p.label).zip(score)
@@ -69,9 +72,13 @@ def evaluateModel(model, validationData):
     print('Test Error = ' + str(testErr))
     print('Learned classification tree model:')
     print(model.toDebugString())
+
+
 if __name__ == "__main__":
     sc = CreateSparkContext()
     (trainData, validationData, testData) = prepare_data(sc)
-    trainData.persist(); validationData.persist(); testData.persist()
+    trainData.persist()
+    validationData.persist()
+    testData.persist()
     model = trainEvaluateModel(trainData, "gini", 10, 100)
     evaluateModel(model, testData)
