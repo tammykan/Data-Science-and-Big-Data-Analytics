@@ -1,7 +1,7 @@
 # Data-Science-and-Big-Data-Analytics
 
 For NCCU 1052 Data Science and Big Data Analytics Final Project <br>
-ICDM contest question : [Expedia-personalized-sort](https://www.kaggle.com/c/expedia-personalized-sort) with spark / Amazon AWS
+Finsih a machine learning challenged hosted by Kaggle in conjunction with Expedia. : [Expedia-personalized-sort](https://www.kaggle.com/c/expedia-personalized-sort) using spark / Amazon AWS
 
 
 ###  Member 
@@ -24,6 +24,7 @@ ICDM contest question : [Expedia-personalized-sort](https://www.kaggle.com/c/exp
 
 ### Reference
 1. [Spark doc](https://spark.apache.org/docs/latest/)
-2. []
+2. [Personalize Expedia Hotel Searches - ICDM 2013](https://www.kaggle.com/c/expedia-personalized-sort)
+3. [benhamner](https://github.com/benhamner/ExpediaPersonalizedSortCompetition)
 
 
