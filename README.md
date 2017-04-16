@@ -1,6 +1,6 @@
 # Data-Science-and-Big-Data-Analytics
 
-For NCCU 1052 Data Science and Big Data Analytics Final Project
+For NCCU 1052 Data Science and Big Data Analytics Final Project <br>
 ICDM contest question : [Expedia-personalized-sort](https://www.kaggle.com/c/expedia-personalized-sort) with spark / Amazon AWS
 
 
