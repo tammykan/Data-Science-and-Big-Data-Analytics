@@ -13,9 +13,11 @@ Finish a machine learning challenged hosted by Kaggle in conjunction with Expedi
 1. visitor_location_country_id
 2. visitor_hist_starrating
 3. visitor_hist_adr_usd
-4. price_use
-5. promotion_flag
-6. srch_query_affinity_score
+4. pro_starrating
+5. prop_review_score
+6. price_use
+7. promotion_flag
+8. srch_query_affinity_score
 
 ### What data we predict
 1. click_bool
