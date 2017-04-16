@@ -30,13 +30,12 @@ def extract_features(record):
         3 : visitor_location_country_id
         4 : visitor_hist_starrating
         5 : visitor_hist_adr_usd
-        14 : position
         15 : price_use
         16 : promotion_flag
         25 : srch_query_affinity_score
     '''
 
-    features_index = [3, 4, 5, 14, 15, 16, 25]
+    features_index = [3, 4, 5, 15, 16, 25]
     features = [convert_float(record[x]) for x in features_index]
     return np.asarray(features)
 
@@ -48,15 +47,13 @@ def prepare_data(sc):
     header = rawDataWithHeader.first()
     rawData = rawDataWithHeader.filter(lambda x: x != header)
     lines = rawData.map(lambda x: x.split(","))
-    print (lines.first())
-    print("共計：" + str(lines.count()) + "筆")
     labelpointRDD = lines.map(lambda r: LabeledPoint(extract_label(r), extract_features(r)))
 
     (trainData, validationData,
      testData) = labelpointRDD.randomSplit([3, 0, 7])
     print("將資料分trainData:" + str(trainData.count()) +
-          "validationData:" + str(validationData.count()) +
-          "testData:" + str(testData.count()))
+          " validationData:" + str(validationData.count()) +
+          " testData:" + str(testData.count()))
     return (trainData, validationData, testData)
 
 
@@ -65,7 +62,6 @@ def CreateSparkContext():
         .setAppName("RunDecisionTreeClassficaiton") \
         .set("spark.ui.showConsoleProgress", "false")
     sc = SparkContext(conf=sparkConf)
-    print ("master=" + sc.master)
     SetLogger(sc)
     return (sc)
 
@@ -81,8 +77,6 @@ def evaluateModel(model, validationData):
     labelsAndPredictions = validationData.map(lambda p: p.label).zip(score)
     testErr = labelsAndPredictions.filter(lambda (v, p): v != p).count() / float(validationData.count())
     print('Test Error = ' + str(testErr))
-    print('Learned classification tree model:')
-    print(model.toDebugString())
 
 
 
@@ -94,7 +88,6 @@ def predictData(sc, model):
     header = rawDataWithHeader.first()
     rawData = rawDataWithHeader.filter(lambda x:x !=header)
     lines = rawData.map(lambda x: x.split(","))
-    print("共計：" + str(lines.count()) + "筆")
     #----------------------2.建立訓練評估所需資料 LabeledPoint RDD-------------
     labelpointRDD = lines.map(lambda r: LabeledPoint("0.0", extract_features(r)))
 
