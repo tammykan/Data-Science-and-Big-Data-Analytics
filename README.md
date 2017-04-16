@@ -1,7 +1,7 @@
 # Data-Science-and-Big-Data-Analytics
 
 For NCCU 1052 Data Science and Big Data Analytics Final Project <br>
-Finsih a machine learning challenged hosted by Kaggle in conjunction with Expedia : [Expedia-personalized-sort](https://www.kaggle.com/c/expedia-personalized-sort)
+Finish a machine learning challenged hosted by Kaggle in conjunction with Expedia : [Expedia-personalized-sort](https://www.kaggle.com/c/expedia-personalized-sort)
 
 
 ###  Member 
