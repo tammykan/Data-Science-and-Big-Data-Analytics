@@ -30,12 +30,14 @@ def extract_features(record):
         3 : visitor_location_country_id
         4 : visitor_hist_starrating
         5 : visitor_hist_adr_usd
+        8 : pro_starrating
+        9 : prop_review_score
         15 : price_use
         16 : promotion_flag
         25 : srch_query_affinity_score
     '''
 
-    features_index = [3, 4, 5, 15, 16, 25]
+    features_index = [3, 4, 5, 8, 9, 15, 16, 25]
     features = [convert_float(record[x]) for x in features_index]
     return np.asarray(features)
 
