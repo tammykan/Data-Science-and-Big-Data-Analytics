@@ -5,7 +5,7 @@ Finish a machine learning challenged hosted by Kaggle in conjunction with Expedi
 
 
 ###  Member 
-1. [Liu z.y.](https://github.com/yad50968)
+1. [Liu Z.Y.](https://github.com/yad50968)
 2. [Tammykan](https://github.com/tammykan)
 3. [Cwsu](https://github.com/cwsu)
 
