@@ -43,7 +43,7 @@ def extract_features(record):
 
 def prepare_data(sc):
     print("開始匯入資料...")
-    rawDataWithHeader = sc.textFile("./train_100mb.csv")
+    rawDataWithHeader = sc.textFile("./train_1000.csv")
     header = rawDataWithHeader.first()
     rawData = rawDataWithHeader.filter(lambda x: x != header)
     lines = rawData.map(lambda x: x.split(","))
@@ -80,26 +80,40 @@ def trainEvaluateModel(trainData):
 def evaluateModel(model, valiadationData):
     score = model.predict(validationData.map(lambda p: p.features))
     #labelsAndPredictions = validationData.map(lambda p: (p.label)).zip(score)
-    labels = validationData.map(lambda p: (p.label))
+    #labels = validationData.map(lambda p: (p.label))
     labelsAndPredictions = validationData.map(lambda p: (p.label, float(model.predict(p.features))))
 
     # Compute raw scores on the test set
     #predictionAndLabels = validationData.map(lambda lp: (float(model.predict(lp.features)), lp.label))
+    predictions = model.predict(validationData.map(lambda x: x.features))
+    labels_and_predictions = validationData.map(lambda x: x.label).zip(predictions)
+    acc = labels_and_predictions.filter(lambda x: x[0] == x[1]).count() / float(validationData.count())
+    print("Model accuracy: %.3f%%" % (acc * 100))
     # Instantiate metrics object
-    metrics = BinaryClassificationMetrics(labelsAndPredictions)
+    #metrics = BinaryClassificationMetrics(labelsAndPredictions)
+    start_time = time()
+
+    metrics = BinaryClassificationMetrics(labels_and_predictions)
+    print("Area under Precision/Recall (PR) curve: %.f" % (metrics.areaUnderPR * 100))
+    print("Area under Receiver Operating Characteristic (ROC) curve: %.3f" % (metrics.areaUnderROC * 100))
+
+    end_time = time()
+    elapsed_time = end_time - start_time
+    print("Time to evaluate model: %.3f seconds" % elapsed_time)
+
 
     # Area under precision-recall curve
-    print("Area under PR = %s" % metrics.areaUnderPR)
+    #print("Area under PR = %s" % metrics.areaUnderPR)
 
     # Area under ROC curve
-    print("Area under ROC = %s" % metrics.areaUnderROC)
+    #print("Area under ROC = %s" % metrics.areaUnderROC)
 
 
     actual = [1,1,1,0,0,0]
     predictions = [0.9,0.9,0.9,0.1,0.1,0.1]
 
-#    actual = sc.parallelize(labels)
-#    predictions = score
+#    actual = predictions
+#    predictions = labels_and_predictions
     false_positive_rate, true_positive_rate, thresholds = roc_curve(actual, predictions)
     roc_auc = auc(false_positive_rate, true_positive_rate)
 
@@ -126,7 +140,7 @@ def evaluateModel(model, valiadationData):
 def predictData(sc, model):
     #----------------------1.匯入並轉換資料-------------
     print("開始匯入資料...")
-    rawDataWithHeader = sc.textFile("./train_100mb.csv")
+    rawDataWithHeader = sc.textFile("./train_1000.csv")
     header = rawDataWithHeader.first()
     rawData = rawDataWithHeader.filter(lambda x:x !=header)
     lines = rawData.map(lambda x: x.split(","))
