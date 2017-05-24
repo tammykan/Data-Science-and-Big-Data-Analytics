@@ -70,31 +70,38 @@ def CreateSparkContext():
 
 
 def trainEvaluateModel(trainData):
-
-#    model = DecisionTree.trainClassifier(trainData, numClasses=2, categoricalFeaturesInfo={}, impurity=impurity, maxDepth=maxDepth, maxBins=maxBins)
-#    model = LogisticRegressionWithLBFGS.train(trainData,intercept = True)
     model = RandomForest.trainClassifier(trainData, 2, {}, 3)
     return model
 
 
 def evaluateModel(model, valiadationData):
     score = model.predict(validationData.map(lambda p: p.features))
-    #labelsAndPredictions = validationData.map(lambda p: (p.label)).zip(score)
-    #labels = validationData.map(lambda p: (p.label))
-    labelsAndPredictions = validationData.map(lambda p: (p.label, float(model.predict(p.features))))
+    labelsAndPredictions = validationData.map(lambda p: (p.label)).zip(score)
+    #labelsAndPredictions = validationData.map(lambda p: (p.label, float(model.predict(p.features))))
 
-    # Compute raw scores on the test set
-    #predictionAndLabels = validationData.map(lambda lp: (float(model.predict(lp.features)), lp.label))
-    predictions = model.predict(validationData.map(lambda x: x.features))
-    labels_and_predictions = validationData.map(lambda x: x.label).zip(predictions)
-    acc = labels_and_predictions.filter(lambda x: x[0] == x[1]).count() / float(validationData.count())
+    testErr = labelsAndPredictions.filter(lambda (v, p): v != p).count() / float(validationData.count())
+
+    print('Test Error = ' + str(testErr))
+    print('Learned classification tree model:')
+    print(model.toDebugString())
+
+
+def rocCurve(model, testData):
+
+   # Compute raw scores on the test set
+    predictions = model.predict(testData.map(lambda x: x.features))
+    labels_and_predictions = testData.map(lambda x: x.label).zip(predictions)
+    acc = labels_and_predictions.filter(lambda x: x[0] == x[1]).count() / float(testData.count())
     print("Model accuracy: %.3f%%" % (acc * 100))
-    # Instantiate metrics object
-    #metrics = BinaryClassificationMetrics(labelsAndPredictions)
-    start_time = time()
 
+    # Instantiate metrics object
+    start_time = time()
     metrics = BinaryClassificationMetrics(labels_and_predictions)
+
+    # Area under precision-recall curve
     print("Area under Precision/Recall (PR) curve: %.f" % (metrics.areaUnderPR * 100))
+    
+    # Area under ROC curve
     print("Area under Receiver Operating Characteristic (ROC) curve: %.3f" % (metrics.areaUnderROC * 100))
 
     end_time = time()
@@ -102,13 +109,7 @@ def evaluateModel(model, valiadationData):
     print("Time to evaluate model: %.3f seconds" % elapsed_time)
 
 
-    # Area under precision-recall curve
-    #print("Area under PR = %s" % metrics.areaUnderPR)
-
-    # Area under ROC curve
-    #print("Area under ROC = %s" % metrics.areaUnderROC)
-
-
+    # Plot  ROC Curve
     actual = [1,1,1,0,0,0]
     predictions = [0.9,0.9,0.9,0.1,0.1,0.1]
 
@@ -127,13 +128,6 @@ def evaluateModel(model, valiadationData):
     plt.ylabel('True Positive Rate')
     plt.xlabel('False Positive Rate')
     plt.show()
-
-    testErr = labelsAndPredictions.filter(lambda (v, p): v != p).count() / float(validationData.count())
-
-    print('Test Error = ' + str(testErr))
-    print('Learned classification tree model:')
-    #print(model.toDebugString())
-
 
 
 
@@ -165,11 +159,8 @@ if __name__ == "__main__":
     (trainData, validationData, testData) = prepare_data(sc)
     trainData.persist()
     validationData.persist()
-    testData.persist()
-    
+    testData.persist()    
     model = trainEvaluateModel(trainData)
-    
-    #model.setThreshold(0.3)
     evaluateModel(model, testData)
-    #model.clearThreshold()
+    rocCurve(model, validationData)
     predictData(sc, model)
