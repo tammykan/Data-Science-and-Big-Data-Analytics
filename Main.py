@@ -33,9 +33,9 @@ def convert_float(x):
 
 
 def extract_features(record):
-    index = np.arange(51)
-    #features_index = [3, 4, 5, 8, 9, 15, 16, 25]
-    features_index = index[2:51]
+    #index = np.arange(51)
+    features_index = [3, 4, 5, 8, 9, 15, 16, 25]
+    #features_index = index[2:51]
     features = [convert_float(record[x]) for x in features_index]
     return np.asarray(features)
 
@@ -43,7 +43,7 @@ def extract_features(record):
 
 def prepare_data(sc):
     print("開始匯入資料...")
-    rawDataWithHeader = sc.textFile("./train_1000.csv")
+    rawDataWithHeader = sc.textFile("./train.csv")
     header = rawDataWithHeader.first()
     rawData = rawDataWithHeader.filter(lambda x: x != header)
     lines = rawData.map(lambda x: x.split(","))
@@ -100,7 +100,7 @@ def rocCurve(model, testData):
 
     # Area under precision-recall curve
     print("Area under Precision/Recall (PR) curve: %.f" % (metrics.areaUnderPR * 100))
-    
+
     # Area under ROC curve
     print("Area under Receiver Operating Characteristic (ROC) curve: %.3f" % (metrics.areaUnderROC * 100))
 
@@ -108,33 +108,10 @@ def rocCurve(model, testData):
     elapsed_time = end_time - start_time
     print("Time to evaluate model: %.3f seconds" % elapsed_time)
 
-
-    # Plot  ROC Curve
-    actual = [1,1,1,0,0,0]
-    predictions = [0.9,0.9,0.9,0.1,0.1,0.1]
-
-#    actual = predictions
-#    predictions = labels_and_predictions
-    false_positive_rate, true_positive_rate, thresholds = roc_curve(actual, predictions)
-    roc_auc = auc(false_positive_rate, true_positive_rate)
-
-    plt.title('Receiver Operating Characteristic')
-    plt.plot(false_positive_rate, true_positive_rate, 'b',
-    label='AUC = %0.2f'% roc_auc)
-    plt.legend(loc='lower right')
-    plt.plot([0,1],[0,1],'r--')
-    plt.xlim([-0.1,1.2])
-    plt.ylim([-0.1,1.2])
-    plt.ylabel('True Positive Rate')
-    plt.xlabel('False Positive Rate')
-    plt.show()
-
-
-
 def predictData(sc, model):
     #----------------------1.匯入並轉換資料-------------
     print("開始匯入資料...")
-    rawDataWithHeader = sc.textFile("./train_1000.csv")
+    rawDataWithHeader = sc.textFile("./train.csv")
     header = rawDataWithHeader.first()
     rawData = rawDataWithHeader.filter(lambda x:x !=header)
     lines = rawData.map(lambda x: x.split(","))
@@ -142,7 +119,7 @@ def predictData(sc, model):
     #----------------------2.建立訓練評估所需資料 LabeledPoint RDD-------------
     #labelpointRDD = lines.map(lambda r: LabeledPoint("0.0", extract_features(r)))
     labelpointRDD = lines.map(lambda r: LabeledPoint(extract_label(r), extract_features(r)))
-    
+
     #----------------------4.進行預測並顯示結果--------------
 
     # 把預測結果寫出來
@@ -156,11 +133,23 @@ def predictData(sc, model):
 
 if __name__ == "__main__":
     sc = CreateSparkContext()
+    k = 3
     (trainData, validationData, testData) = prepare_data(sc)
     trainData.persist()
     validationData.persist()
-    testData.persist()    
-    model = trainEvaluateModel(trainData)
-    evaluateModel(model, testData)
-    rocCurve(model, validationData)
-    predictData(sc, model)
+    testData.persist()
+    modelBest = trainEvaluateModel(trainData)
+    errLowest = evaluateModel(modelBest, testData)
+    for i in (0,k):
+
+        (trainData, validationData, testData) = prepare_data(sc)
+        trainData.persist()
+        validationData.persist()
+        testData.persist()
+        model = trainEvaluateModel(trainData)
+        err = evaluateModel(model, testData)
+	if err <= errLowest:
+	    errLowest = err
+	    modelBest = model
+    	rocCurve(modelBest, validationData)
+    predictData(sc, modelBest)
