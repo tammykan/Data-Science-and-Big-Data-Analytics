@@ -1,10 +1,10 @@
 library(CausalImpact)
 
 # Read data
-sum_usd_data <- read.csv("../causal_impact_data/sum_usd.csv", header = F, na.strings = c('NA',''))
-stock_price_data <- read.csv("../causal_impact_data/aal_stock_price_data.csv", header = F, na.strings = c('NA'), stringsAsFactors = FALSE)
+sum_usd_data <- read.csv("causal_impact_data/sum_usd.csv", header = F, na.strings = c('NA',''))
+stock_price_data <- read.csv("causal_impact_data/stock.csv", header = F, na.strings = c('NA'), stringsAsFactors = FALSE)
 y <- as.numeric(sum_usd_data[,2])
-x1 <-as.numeric(stock_price_data)
+x1 <-as.numeric(stock_price_data[,2])
 data <- cbind(y, x1)
 
 dim(data)
